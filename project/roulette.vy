@@ -63,6 +63,49 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
     #    2 - betType is known (between 0 and 10)
     #    3 - the option betted is valid (don't bet on 37! or different options for different bet_types) 
     # - store it in the bets data structure
+
+    account = msg.sender
+
+    # time is up
+    if block.timestamp < self.start_time or block.timestamp > end_time:
+        pass
+
+    # bet type invalid
+    if bet_type < 0 or bet_type > 9:
+        pass
+
+    # bet amount is invalid
+    if amount < self.MIN_BET_AMOUNT or amount > self.MAX_BET_AMOUNT:
+        pass
+
+    # invalid, handle
+    for num in numbers:
+        if num < 0 or num > 36:
+            pass
+
+    # bet types 0 to 4 should have max 1 number, with apt encoding, throw error else
+    if bet_type >= 0 and bet_type <= 4 and len(numbers) != 1:
+        pass
+
+    # 6 nums
+    if bet_type = 5 and len(numbers) != 6:
+        pass
+
+    # 4 nums
+    if bet_type = 6 and len(numbers) != 4:
+        pass
+
+    # 3 nums
+    if bet_type = 7 and len(numbers) != 3:
+        pass
+
+    # 2 nums
+    if bet_type = 8 and len(numbers) != 2:
+        pass
+
+    # 1 nums
+    if bet_type = 9 and len(numbers) != 1:
+        pass
     
     pass
 
