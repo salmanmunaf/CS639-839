@@ -63,6 +63,7 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
     #    2 - betType is known (between 0 and 10)
     #    3 - the option betted is valid (don't bet on 37! or different options for different bet_types) 
     # - store it in the bets data structure
+    
     pass
 
 @external 
