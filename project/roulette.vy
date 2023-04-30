@@ -162,7 +162,7 @@ def spin():
         elif bet.bet_type >= 5:  # 6-line (6 nums - 2 streets)
             if (winning_number in bet.numbers):
                 won = True
-        payout: decimal = (bet.amount * self.payouts[bet.bet_type]) / self.bank_balance
+        payout: decimal = floor(bet.amount * self.payouts[bet.bet_type]) / self.bank_balance
         send(bet.player, payout)
     
     #clearing data
