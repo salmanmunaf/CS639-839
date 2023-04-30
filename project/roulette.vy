@@ -16,7 +16,7 @@ struct Bet:
     bet_type: uint8
     numbers: DynArray[uint8, 6]
 
-
+bets: DynArray[Bet, 7]
 
 # BetTypes are as follow:
 #   0: color
@@ -45,6 +45,7 @@ def __init__():
     self.MIN_BET_AMOUNT = 10000000000000000 # 0.01 eth
     self.MAX_BET_AMOUNT = 50000000000000000 # 0.05 eth
     self.payouts = [2,2,2,3,3,6,9,12,18,36]
+    self.bets = []
     self.bank_balance = 0
     self.bidding_time = 120 # 2 mins
     self.start_time = block.timestamp
@@ -54,8 +55,6 @@ def __init__():
         for j in range(3):
             self.positions[i * 3 + j + 1] = [i, j]
     
-    self.bets: DynArray[Bet, 7]
-    # self.bets = []
     
 
 @external 
@@ -71,62 +70,52 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
     # time is up
     if block.timestamp < self.start_time or block.timestamp > end_time:
         raise "ERROR: Time is up"
-        pass
 
     # bet type invalid
     if bet_type < 0 or bet_type > 9:
         raise "ERROR: Bet type is invalid"
-        pass
 
     # bet amount is invalid
     if amount < self.MIN_BET_AMOUNT or amount > self.MAX_BET_AMOUNT:
         raise "ERROR: Bet amount needs to be within 0.01 and 0.05 eth"
-        pass
 
     # invalid, handle
     for num in numbers:
         if num < 0 or num > 36:
             raise "ERROR: One of the numbers entered in the bet locations is out of range (0-36)"
-            # pass
 
     # bet types 0 to 4 should have max 1 number, with apt encoding, throw error else
     if bet_type >= 0 and bet_type <= 4 and len(numbers) != 1:
         raise "ERROR: Too many/few numbers entered for bet type. Must be 1."
-        # pass
 
     # 6 nums
     if bet_type == 5 and len(numbers) != 6:
         raise "ERROR: Too many/few numbers entered for bet type. Must be 6."
-        # pass
 
     # 4 nums
     if bet_type == 6 and len(numbers) != 4:
         raise "ERROR: Too many/few numbers entered for bet type. Must be 4."
-        # pass
 
     # 3 nums
     if bet_type == 7 and len(numbers) != 3:
         raise "ERROR: Too many/few numbers entered for bet type. Must be 3."
-        # pass
 
     # 2 nums
     if bet_type == 8 and len(numbers) != 2:
         raise "ERROR: Too many/few numbers entered for bet type. Must be 2."
-        # pass
 
     # 1 nums
     if bet_type == 9 and len(numbers) != 1:
         raise "ERROR: Too many/few numbers entered for bet type. Must be 1."
-        # pass
     
     # if none of the above are fails, then load bet conditional on if number
     # of max players has not been reached
     if len(self.bets) != self.MAX_PLAYERS:
         temp_bet: Bet = Bet({player: msg.sender, amount: amount, bet_type: bet_type, numbers: numbers})
         self.bets.append(temp_bet)
+        self.bank_balance += amount
     else:
         raise "ERROR: Max player count reached"
-    # pass
 
 @external 
 def spin():
@@ -144,7 +133,6 @@ def spin():
     
     # Iterate over bets and settle them
     for bet in self.bets:
-        payout = 0
         won: bool = False
         if bet.bet_type == 0:  # color
             if (bet.numbers[0] == 0):                                   #/* bet on black */
@@ -157,18 +145,12 @@ def spin():
                     won = (winning_number % 2 == 1)
                 else:
                     won = (winning_number % 2 == 0)
-                # }
-        #   }
-            # if (winning_number % 2 == 0 and bet.numbers[0] == 0) or (winning_number % 2 != 0 and bet.numbers[0] == 1):
-            #     payout = bet.amount * self.payouts[0]
         elif bet.bet_type == 1:  # modulus
             if (winning_number % 2 == 0 and bet.numbers[0] == 0) or (winning_number % 2 == 1 and bet.numbers[0] == 1):
                 won = True
-                # payout = bet.amount * self.payouts[1]
         elif bet.bet_type == 2:  # eighteen
             if (winning_number < 19 and bet.numbers[0] == 0) or (winning_number >= 19 and bet.numbers[0] == 1):
                 won = True
-                # payout = bet.amount * self.payouts[2]
         elif bet.bet_type == 3:  # column
             if (bet.numbers[0] == 0):
                 won = (winning_number % 3 == 1) #/* bet on left column */
@@ -176,17 +158,18 @@ def spin():
                 won = (winning_number % 3 == 2) #/* bet on middle column */
             if (bet.numbers[0] == 2):
                 won = (winning_number % 3 == 0) #bet on right column
-            # if (winning_number % 3 == bet.numbers[0]) and (winning_number != 0):
-            #     payout = bet.amount * self.payouts[3]
         elif bet.bet_type == 4:  # dozen
             if (winning_number < 13 and bet.numbers[0] == 0) or (winning_number >= 13 and winning_number < 25 and bet.numbers[0] == 1) or (winning_number >= 25 and bet.numbers[0] == 2):
                 won = True
-                # payout = bet.amount * self.payouts[4]
         elif bet.bet_type >= 5:  # 6-line (6 nums - 2 streets)
             if (winning_number in bet.numbers):
                 won = True
-        #         payout = bet.amount * self.payouts[5]
-        # elif bet.bet_type == 6:  # corner (4 nums)
-        #     if (bet.numbers[0] == winning_number) or (bet.numbers[1] == winning_number) or (bet.numbers[2] == winning_number) or (bet.numbers[3] == winning_number):
-        #         payout = bet.amount * self.payouts[6]
-        # elif bet.bet_type == 7:  # street (3 nums)
+        payout: decimal = (bet.amount * self.payouts[bet.bet_type]) / self.bank_balance
+        send(bet.player, payout)
+    
+    #clearing data
+    self.bets = []
+    self.bank_balance = 0
+    #restart game
+    self.start_time = block.timestamp
+    self.end_time = block.timestamp + self.bidding_time
