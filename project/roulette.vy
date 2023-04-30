@@ -1,14 +1,14 @@
 positions: HashMap[uint8, uint8[2]]
 winners: DynArray[address, 7]
-num_players: uint8
-MAX_PLAYERS: uint8
-MIN_BET_AMOUNT: uint256
-MAX_BET_AMOUNT: uint256
-payouts: uint8[10]
-bank_balance: uint256
-start_time: uint256
-end_time: uint256
-bidding_time: uint256
+num_players: public(uint8)
+MAX_PLAYERS: public(uint8)
+MIN_BET_AMOUNT: public(uint256)
+MAX_BET_AMOUNT: public(uint256)
+payouts: public(uint8[10])
+bank_balance: public(uint256)
+start_time: public(uint256)
+end_time: public(uint256)
+bidding_time: public(uint256)
 
 struct Bet:
     player: address
@@ -40,7 +40,7 @@ bets: DynArray[Bet, 7]
 #   number: number
 
 @external
-def __init__():
+def __init__(bidding_time: uint256):
     self.MAX_PLAYERS = 7
     self.MIN_BET_AMOUNT = 10000000000000000 # 0.01 eth
     self.MAX_BET_AMOUNT = 50000000000000000 # 0.05 eth
@@ -48,7 +48,8 @@ def __init__():
     self.bets = []
     self.winners = []
     self.bank_balance = 0
-    self.bidding_time = 120 # 2 mins
+    self.num_players = 0
+    self.bidding_time = bidding_time # 2 mins
     self.start_time = block.timestamp
     self.end_time = block.timestamp + self.bidding_time
     # setting up board positions
@@ -66,7 +67,7 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
     #    3 - the option betted is valid (don't bet on 37! or different options for different bet_types) 
     # - store it in the bets data structure
 
-    print(bet_type, amount, numbers, msg.sender)
+    # print(bet_type, amount, numbers, msg.sender)
     # time is up
     if block.timestamp < self.start_time or block.timestamp > self.end_time:
         raise "ERROR: Time is up"
@@ -114,6 +115,7 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
         temp_bet: Bet = Bet({player: msg.sender, amount: amount, bet_type: bet_type, numbers: numbers})
         self.bets.append(temp_bet)
         self.bank_balance += amount
+        self.num_players += 1
     else:
         raise "ERROR: Max player count reached"
 
@@ -194,3 +196,33 @@ def get_winner() -> DynArray[address, 7]:
         raise "No one won yet"
 
     return self.winners
+
+@external
+@view
+def is_spin_phase() -> bool:
+    return block.timestamp >= self.end_time
+
+@external
+@view
+def is_bet_phase() -> bool:
+    return (block.timestamp >= self.start_time and block.timestamp < self.end_time)
+
+@external
+@view
+def get_bets() -> DynArray[Bet, 7]:
+    return self.bets
+
+@external
+@view
+def get_block_timestamp() -> uint256:
+    return block.timestamp
+
+@external
+@view
+def get_end_time() -> uint256:
+    return self.end_time
+
+@external
+@view
+def get_bank_balance() -> uint256:
+    return self.bank_balance
