@@ -1,5 +1,5 @@
 positions: HashMap[uint8, uint8[2]]
-winner: address
+winners: DynArray[address, 7]
 num_players: uint8
 MAX_PLAYERS: uint8
 MIN_BET_AMOUNT: uint256
@@ -46,6 +46,7 @@ def __init__():
     self.MAX_BET_AMOUNT = 50000000000000000 # 0.05 eth
     self.payouts = [2,2,2,3,3,6,9,12,18,36]
     self.bets = []
+    self.winners = []
     self.bank_balance = 0
     self.bidding_time = 120 # 2 mins
     self.start_time = block.timestamp
@@ -162,12 +163,33 @@ def spin():
         elif bet.bet_type >= 5:  # 6-line (6 nums - 2 streets)
             if (winning_number in bet.numbers):
                 won = True
-        payout: decimal = floor(bet.amount * self.payouts[bet.bet_type]) / self.bank_balance
-        send(bet.player, payout)
+
+        if (won):
+            payout: decimal = floor(bet.amount * self.payouts[bet.bet_type]) / self.bank_balance
+            send(bet.player, payout)
+            self.winners.append(bet.player)
     
     #clearing data
-    self.bets = []
-    self.bank_balance = 0
+    # self.bets = []
+    # self.bank_balance = 0
     #restart game
-    self.start_time = block.timestamp
-    self.end_time = block.timestamp + self.bidding_time
+    # self.start_time = block.timestamp
+    # self.end_time = block.timestamp + self.bidding_time
+
+@external
+@view
+def has_winner():
+    return len(self.winners) > 0
+
+@external
+@view
+def get_winner():
+    ''' Returns the addresses of the winner's account '''
+
+    #TODO figure out who won
+
+    # Raise an error if no one won yet
+    if len(self.winners) == 0:
+        raise "No one won yet"
+
+    return self.winners
