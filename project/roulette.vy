@@ -54,8 +54,6 @@ def __init__():
     for i in range(12):
         for j in range(3):
             self.positions[i * 3 + j + 1] = [i, j]
-    
-    
 
 @external 
 def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
