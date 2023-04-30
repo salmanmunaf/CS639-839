@@ -6,9 +6,9 @@ MIN_BET_AMOUNT: uint256
 MAX_BET_AMOUNT: uint256
 payouts: uint8[10]
 bank_balance: uint256
-start_time: timestamp
-end_time: timestamp
-bidding_time: timedelta
+start_time: uint256
+end_time: uint256
+bidding_time: uint256
 
 struct Bet:
     player: address
@@ -66,8 +66,9 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
     #    3 - the option betted is valid (don't bet on 37! or different options for different bet_types) 
     # - store it in the bets data structure
 
+    print(bet_type, amount, numbers, msg.sender)
     # time is up
-    if block.timestamp < self.start_time or block.timestamp > end_time:
+    if block.timestamp < self.start_time or block.timestamp > self.end_time:
         raise "ERROR: Time is up"
 
     # bet type invalid
@@ -109,7 +110,7 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
     
     # if none of the above are fails, then load bet conditional on if number
     # of max players has not been reached
-    if len(self.bets) != self.MAX_PLAYERS:
+    if convert(len(self.bets), uint8) != self.MAX_PLAYERS:
         temp_bet: Bet = Bet({player: msg.sender, amount: amount, bet_type: bet_type, numbers: numbers})
         self.bets.append(temp_bet)
         self.bank_balance += amount
@@ -165,7 +166,7 @@ def spin():
                 won = True
 
         if (won):
-            payout: decimal = floor(bet.amount * self.payouts[bet.bet_type]) / self.bank_balance
+            payout: uint256 = convert(floor(convert(bet.amount, decimal) * convert(self.payouts[bet.bet_type], decimal) / convert(self.bank_balance, decimal)), uint256)
             send(bet.player, payout)
             self.winners.append(bet.player)
     
@@ -178,12 +179,12 @@ def spin():
 
 @external
 @view
-def has_winner():
+def has_winner() -> bool:
     return len(self.winners) > 0
 
 @external
 @view
-def get_winner():
+def get_winner() -> DynArray[address, 7]:
     ''' Returns the addresses of the winner's account '''
 
     #TODO figure out who won
