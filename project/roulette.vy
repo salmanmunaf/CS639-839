@@ -55,12 +55,8 @@ def __init__():
             self.positions[i * 3 + j + 1] = [i, j]
     
     self.bets: DynArray[Bet, 7]
-<<<<<<< HEAD
-    # self.bets = []
-=======
     #self.bets = []
->>>>>>> 80556d1 (test)
-    
+
 
 @external 
 def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
