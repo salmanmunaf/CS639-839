@@ -9,6 +9,8 @@ bank_balance: public(uint256)
 start_time: public(uint256)
 end_time: public(uint256)
 bidding_time: public(uint256)
+# Set to true at the end, disallows any change
+ended: public(bool)
 
 struct Bet:
     player: address
@@ -42,10 +44,11 @@ bets: DynArray[Bet, 7]
 @external
 def __init__(bidding_time: uint256):
     self.MAX_PLAYERS = 7
-    self.MIN_BET_AMOUNT = 10000000000000000 # 0.01 eth
-    self.MAX_BET_AMOUNT = 50000000000000000 # 0.05 eth
+    self.MIN_BET_AMOUNT = 1000000000000000 # 0.001 eth
+    self.MAX_BET_AMOUNT = 5000000000000000 # 0.005 eth
     self.payouts = [2,2,2,3,3,6,9,12,18,36]
     self.bets = []
+    self.ended = False
     self.winners = []
     self.bank_balance = 0
     self.num_players = 0
@@ -121,6 +124,7 @@ def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
 
 @external 
 def spin():
+    #restrict game has ended
     # are there any bets?
     # are we allowed to spin the wheel
     # calculate 'random' number
@@ -129,6 +133,9 @@ def spin():
     # Check if spin is valid
     if block.timestamp < self.end_time:
         raise "ERROR: Invalid spin"
+
+    if self.ended:
+        raise "ERROR: The wheel has already been spun and the game has ended"
     
     # Generate random number between 0 and 36 (inclusive)
     winning_number: uint8 = 17
@@ -172,6 +179,7 @@ def spin():
             send(bet.player, payout)
             self.winners.append(bet.player)
     
+    self.ended = True
     #clearing data
     # self.bets = []
     # self.bank_balance = 0
@@ -183,6 +191,11 @@ def spin():
 @view
 def has_winner() -> bool:
     return len(self.winners) > 0
+
+@external
+@view
+def has_ended() -> bool:
+    return self.ended
 
 @external
 @view
