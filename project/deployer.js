@@ -6,11 +6,11 @@ const provider = new Web3.providers.HttpProvider(`https://goerli.infura.io/v3/${
 const web3 = new Web3(provider);
 
 // Create an instance of your contract
-const myContract = new web3.eth.Contract(contract.abi);
+const myContract = new web3.eth.Contract(contract['roulette.vy'].abi);
 
 // Deploy the contract
 myContract.deploy({
-  data: contract.bytecode,
+  data: contract['roulette.vy'].bytecode,
   arguments: [20] // Set the bidding time accordingly
 })
 .send({
