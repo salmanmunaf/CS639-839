@@ -1,0 +1,1 @@
+vyper roulette.vy -f combined_json -o contract.json
