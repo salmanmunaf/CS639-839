@@ -1,3 +1,10 @@
+# @version 0.2.16
+
+interface VRFConsumerInterface:
+    def getRandomNumber(): payable
+    def returnRandomNumber() -> uint256: view
+    
+
 positions: HashMap[uint8, uint8[2]]
 winners: DynArray[address, 7]
 num_players: public(uint8)
