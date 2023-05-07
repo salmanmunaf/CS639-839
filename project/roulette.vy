@@ -18,6 +18,7 @@ end_time: public(uint256)
 bidding_time: public(uint256)
 # Set to true at the end, disallows any change
 ended: public(bool)
+VRFConsumer: public(VRFConsumerInterface)
 
 struct Bet:
     player: address
@@ -66,6 +67,7 @@ def __init__(bidding_time: uint256):
     for i in range(12):
         for j in range(3):
             self.positions[i * 3 + j + 1] = [i, j]
+    self.VRFConsumer = VRFConsumerInterface(_VRFConsumer_address)
 
 @external 
 def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
@@ -145,7 +147,8 @@ def spin():
         raise "ERROR: The wheel has already been spun and the game has ended"
     
     # Generate random number between 0 and 36 (inclusive)
-    winning_number: uint8 = 17
+    #winning_number: uint8 = 17
+    winning_number: self.VRFConsumer.returnRandomNumber()%37
     
     # Iterate over bets and settle them
     for bet in self.bets:
