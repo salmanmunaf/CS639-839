@@ -1,4 +1,4 @@
-# @version 0.2.16
+# @version 0.3.7
 
 interface VRFConsumerInterface:
     def getRandomNumber(): payable
@@ -68,6 +68,7 @@ def __init__(bidding_time: uint256):
         for j in range(3):
             self.positions[i * 3 + j + 1] = [i, j]
     self.VRFConsumer = VRFConsumerInterface(_VRFConsumer_address)
+    self.winning_number = 0
 
 @external 
 def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
@@ -148,7 +149,8 @@ def spin():
     
     # Generate random number between 0 and 36 (inclusive)
     #winning_number: uint8 = 17
-    winning_number: self.VRFConsumer.returnRandomNumber()%37
+    self.winning_number: self.VRFConsumer.returnRandomNumber()%37
+    print(winning_number)
     
     # Iterate over bets and settle them
     for bet in self.bets:
