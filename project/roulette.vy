@@ -68,7 +68,7 @@ def __init__(bidding_time: uint256, _VRFConsumer_address: address):
         for j in range(3):
             self.positions[i * 3 + j + 1] = [i, j]
     self.VRFConsumer = VRFConsumerInterface(_VRFConsumer_address)
-    self.winning_number = 0
+    # self.winning_number = 0
 
 @external 
 def bet(bet_type: uint8, amount: uint256, numbers: DynArray[uint8, 6]):
@@ -149,8 +149,8 @@ def spin():
     
     # Generate random number between 0 and 36 (inclusive)
     #winning_number: uint8 = 17
-    self.winning_number: self.VRFConsumer.returnRandomNumber()%37
-    print(winning_number)
+    winning_number: uint8 = convert(self.VRFConsumer.returnRandomNumber()%37, uint8)
+    # print(winning_number)
     
     # Iterate over bets and settle them
     for bet in self.bets:
