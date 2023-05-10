@@ -3,13 +3,15 @@ const Web3 = require("web3");
 // Loading the contract ABI and Bytecode
 // (the results of a previous compilation step)
 const fs = require("fs");
+const { exit } = require("process");
 const { abi, bytecode } = JSON.parse(fs.readFileSync("contract.json"))['roulette.vy'];
-const BIDDING_TIME = 20; // set bidding time
-const _VRFConsumer_address = process.env._VRFConsumer_address;
 
 async function main() {
   // Configuring the connection to an Ethereum node
   const network = process.env.ETHEREUM_NETWORK;
+  const _VRFConsumer_address = process.env.VRF_CONSUMER;
+  const BIDDING_TIME = process.env.BIDDING_TIME; // set bidding time
+
   const web3 = new Web3(
     new Web3.providers.HttpProvider(
       `https://${network}.infura.io/v3/${process.env.INFURA_API_KEY}`
@@ -25,7 +27,7 @@ async function main() {
   const contract = new web3.eth.Contract(abi);
   contract.options.data = bytecode;
   const deployTx = contract.deploy({
-    arguments: [BIDDING_TIME,  _VRFConsumer_address ]
+    arguments: [BIDDING_TIME,_VRFConsumer_address]
   });
   const deployedContract = await deployTx
     .send({
