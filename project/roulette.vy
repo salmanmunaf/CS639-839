@@ -50,7 +50,7 @@ bets: DynArray[Bet, 7]
 #   number: number
 
 @external
-def __init__(bidding_time: uint256):
+def __init__(bidding_time: uint256, _VRFConsumer_address: address):
     self.MAX_PLAYERS = 7
     self.MIN_BET_AMOUNT = 1000000000000000 # 0.001 eth
     self.MAX_BET_AMOUNT = 5000000000000000 # 0.005 eth
